@@ -1133,29 +1133,6 @@ function closeStatusDialog() {
     }
 }
 
-// Toggle para el menú desplegable de exportación
-document.addEventListener('DOMContentLoaded', function() {
-    const exportBtn = document.getElementById('exportDropdownBtn');
-    const exportContent = document.getElementById('exportDropdownContent');
-    
-    exportBtn.addEventListener('click', function(e) {
-        e.stopPropagation();
-        exportContent.classList.toggle('show');
-    });
-    
-    // Cerrar el menú al hacer clic fuera de él
-    document.addEventListener('click', function(e) {
-        if (!exportBtn.contains(e.target) && !exportContent.contains(e.target)) {
-            exportContent.classList.remove('show');
-        }
-    });
-    
-    // Evitar que el menú se cierre al hacer clic dentro de él
-    exportContent.addEventListener('click', function(e) {
-        e.stopPropagation();
-    });
-});
-
 // Exportar datos filtrados
 function exportFilteredData() {
     // Obtener los datos actualmente mostrados en la tabla
@@ -1731,7 +1708,59 @@ function isMobileDevice() {
     }, 3000);
 };
 
+// Menú responsivo
+document.addEventListener('DOMContentLoaded', function() {
+    const menuToggle = document.querySelector('.menu-toggle');
+    const navLinks = document.querySelector('.nav-links');
+    
+    if (menuToggle) {
+        menuToggle.addEventListener('click', function() {
+            navLinks.classList.toggle('show');
+        });
+    }
+    
+    // Activar enlaces del navbar
+    const navLinkElements = document.querySelectorAll('.nav-link');
+    navLinkElements.forEach(link => {
+        link.addEventListener('click', function() {
+            navLinkElements.forEach(l => l.classList.remove('active'));
+            this.classList.add('active');
+            
+            // Cerrar el menú móvil si está abierto
+            if (window.innerWidth <= 768) {
+                navLinks.classList.remove('show');
+            }
+        });
+    });
+});
 
+// Toggle para el menú desplegable de exportación
+document.addEventListener('DOMContentLoaded', function() {
+    const exportBtn = document.getElementById('exportDropdownBtn');
+    const exportContent = document.getElementById('exportDropdownContent');
+    
+    if (exportBtn && exportContent) {
+        exportBtn.addEventListener('click', function(e) {
+            e.preventDefault(); // Prevenir comportamiento predeterminado
+            e.stopPropagation(); // Detener propagación del evento
+            exportContent.classList.toggle('show');
+        });
+        
+        // Cerrar el menú al hacer clic fuera de él
+        document.addEventListener('click', function(e) {
+            if (exportContent.classList.contains('show') && 
+                !exportBtn.contains(e.target) && 
+                !exportContent.contains(e.target)) {
+                exportContent.classList.remove('show');
+            }
+        });
+        
+        // Evitar que el menú se cierre al hacer clic dentro de él
+        exportContent.addEventListener('click', function(e) {
+            e.stopPropagation();
+        });
+    }
+});
 
 // Event listener para importar archivo
 document.getElementById('fileInput').addEventListener('change', handleFileImport);
