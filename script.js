@@ -1827,6 +1827,276 @@ function isMobileDevice() {
     }, 3000);
 };
 
+// Inicializar la sección de búsqueda
+function initializeSearch() {
+    // Llenar el primer campo de búsqueda
+    updateSearchField(document.querySelector('.searchField'));
+    
+    // Configurar el botón para agregar condiciones
+    document.getElementById('addCondition').addEventListener('click', addSearchCondition);
+    
+    // Configurar el botón de búsqueda
+    document.getElementById('searchButton').addEventListener('click', searchClients);
+}
+
+// Actualizar un campo de búsqueda específico
+function updateSearchField(selectElement) {
+    selectElement.innerHTML = '';
+    fields.forEach(field => {
+        const option = document.createElement('option');
+        option.value = field.name;
+        option.textContent = field.name;
+        selectElement.appendChild(option);
+    });
+
+    // Actualizar operadores disponibles según el tipo de campo seleccionado
+    selectElement.addEventListener('change', () => {
+        const selectedField = fields.find(f => f.name === selectElement.value);
+        updateSearchOperators(selectElement.nextElementSibling, selectedField.type);
+    });
+
+    // Inicializar operadores para el primer campo
+    if (fields.length > 0) {
+        const selectedField = fields.find(f => f.name === selectElement.value);
+        updateSearchOperators(selectElement.nextElementSibling, selectedField ? selectedField.type : 'text');
+    }
+}
+
+// Actualizar operadores para un tipo de campo específico
+function updateSearchOperators(operatorSelect, fieldType) {
+    operatorSelect.innerHTML = '';
+    
+    const operators = {
+        text: [
+            { value: 'contains', text: 'Contiene' },
+            { value: 'equals', text: 'Igual a' },
+            { value: 'notEquals', text: 'Distinto a' },
+            { value: 'startsWith', text: 'Empieza con' },
+            { value: 'endsWith', text: 'Termina con' }
+        ],
+        number: [
+            { value: 'equals', text: 'Igual a' },
+            { value: 'notEquals', text: 'Distinto a' },
+            { value: 'greater', text: 'Mayor que' },
+            { value: 'less', text: 'Menor que' },
+            { value: 'greaterEqual', text: 'Mayor o igual que' },
+            { value: 'lessEqual', text: 'Menor o igual que' }
+        ],
+        date: [
+            { value: 'equals', text: 'Igual a' },
+            { value: 'notEquals', text: 'Distinto a' },
+            { value: 'greater', text: 'Posterior a' },
+            { value: 'less', text: 'Anterior a' },
+            { value: 'greaterEqual', text: 'En o posterior a' },
+            { value: 'lessEqual', text: 'En o anterior a' }
+        ],
+        status: [
+            { value: 'equals', text: 'Igual a' },
+            { value: 'notEquals', text: 'Distinto a' }
+        ],
+        image: [
+            { value: 'hasImage', text: 'Tiene imagen' },
+            { value: 'noImage', text: 'No tiene imagen' }
+        ]
+    };
+
+    const availableOperators = operators[fieldType] || operators.text;
+    
+    availableOperators.forEach(op => {
+        const option = document.createElement('option');
+        option.value = op.value;
+        option.textContent = op.text;
+        operatorSelect.appendChild(option);
+    });
+}
+
+// Agregar una nueva condición de búsqueda
+function addSearchCondition() {
+    const searchConditions = document.getElementById('searchConditions');
+    const conditionCount = searchConditions.querySelectorAll('.search-condition').length;
+    
+    // Crear una nueva condición
+    const newCondition = document.createElement('div');
+    newCondition.className = 'search-condition';
+    newCondition.innerHTML = `
+        <div class="search-controls">
+            <select class="searchField"></select>
+            <select class="searchOperator"></select>
+            <input type="text" class="searchValue" placeholder="Valor a buscar">
+            <button class="remove-condition">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+    `;
+    
+    searchConditions.appendChild(newCondition);
+    
+    // Inicializar el nuevo campo de búsqueda
+    const newSearchField = newCondition.querySelector('.searchField');
+    updateSearchField(newSearchField);
+    
+    // Mostrar el botón de eliminar en todas las condiciones si hay más de una
+    if (conditionCount >= 1) {
+        document.querySelectorAll('.remove-condition').forEach(btn => {
+            btn.style.display = 'flex';
+        });
+    }
+    
+    // Configurar el botón de eliminar
+    const removeButton = newCondition.querySelector('.remove-condition');
+    removeButton.addEventListener('click', function() {
+        searchConditions.removeChild(newCondition);
+        
+        // Ocultar el botón de eliminar en la única condición si solo queda una
+        if (searchConditions.querySelectorAll('.search-condition').length === 1) {
+            searchConditions.querySelector('.remove-condition').style.display = 'none';
+        }
+    });
+}
+
+// Buscar clientes con múltiples condiciones
+function searchClients() {
+    const conditions = [];
+    const searchConditions = document.querySelectorAll('.search-condition');
+    const logicalOperator = document.getElementById('logicalOperator').value;
+    
+    // Recopilar todas las condiciones
+    searchConditions.forEach(conditionElement => {
+        const fieldName = conditionElement.querySelector('.searchField').value;
+        const operator = conditionElement.querySelector('.searchOperator').value;
+        const value = conditionElement.querySelector('.searchValue').value;
+        const field = fields.find(f => f.name === fieldName);
+        
+        conditions.push({
+            field: fieldName,
+            operator: operator,
+            value: value,
+            type: field.type
+        });
+    });
+    
+    // Filtrar clientes según las condiciones y el operador lógico
+    const filteredClients = clients.filter(client => {
+        // Evaluar cada condición
+        const results = conditions.map(condition => {
+            return evaluateCondition(client, condition);
+        });
+        
+        // Aplicar operador lógico
+        if (logicalOperator === 'and') {
+            return results.every(result => result === true);
+        } else { // 'or'
+            return results.some(result => result === true);
+        }
+    });
+    
+    updateTable(filteredClients);
+}
+
+// Evaluar una condición individual
+function evaluateCondition(client, condition) {
+    const { field, operator, value, type } = condition;
+    const clientValue = client[field];
+    
+    // Manejar tipos especiales
+    if (type === 'status') {
+        const boolValue = value.toLowerCase() === 'true' || value.toLowerCase() === 'activo';
+        if (operator === 'equals') {
+            return clientValue === boolValue;
+        } else { // notEquals
+            return clientValue !== boolValue;
+        }
+    }
+    
+    if (type === 'image') {
+        const hasImage = clientValue && clientValue.trim() !== '';
+        if (operator === 'hasImage') {
+            return hasImage;
+        } else { // noImage
+            return !hasImage;
+        }
+    }
+    
+    // Para tipos normales
+    const compareValue = type === 'number' ? Number(value) : value;
+
+    switch (operator) {
+        case 'contains':
+            return String(clientValue).toLowerCase()
+                .includes(String(compareValue).toLowerCase());
+        
+        case 'equals':
+            return type === 'number' 
+                ? clientValue === compareValue
+                : String(clientValue).toLowerCase() === String(compareValue).toLowerCase();
+        
+        case 'notEquals':
+            return type === 'number'
+                ? clientValue !== compareValue
+                : String(clientValue).toLowerCase() !== String(compareValue).toLowerCase();
+        
+        case 'startsWith':
+            return String(clientValue).toLowerCase()
+                .startsWith(String(compareValue).toLowerCase());
+        
+        case 'endsWith':
+            return String(clientValue).toLowerCase()
+                .endsWith(String(compareValue).toLowerCase());
+        
+        case 'greater':
+            return type === 'number' || type === 'date'
+                ? clientValue > compareValue
+                : String(clientValue).toLowerCase() > String(compareValue).toLowerCase();
+        
+        case 'less':
+            return type === 'number' || type === 'date'
+                ? clientValue < compareValue
+                : String(clientValue).toLowerCase() < String(compareValue).toLowerCase();
+        
+        case 'greaterEqual':
+            return type === 'number' || type === 'date'
+                ? clientValue >= compareValue
+                : String(clientValue).toLowerCase() >= String(compareValue).toLowerCase();
+        
+        case 'lessEqual':
+            return type === 'number' || type === 'date'
+                ? clientValue <= compareValue
+                : String(clientValue).toLowerCase() <= String(compareValue).toLowerCase();
+        
+        default:
+            return true;
+    }
+}
+
+// Actualizar campos de búsqueda (reemplazar la función existente)
+function updateSearchFields() {
+    // Limpiar condiciones existentes
+    const searchConditions = document.getElementById('searchConditions');
+    searchConditions.innerHTML = `
+        <div class="search-condition">
+            <div class="search-controls">
+                <select class="searchField"></select>
+                <select class="searchOperator"></select>
+                <input type="text" class="searchValue" placeholder="Valor a buscar">
+                <button class="remove-condition" style="display: none;">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        </div>
+    `;
+    
+    // Inicializar la primera condición
+    const firstSearchField = document.querySelector('.searchField');
+    updateSearchField(firstSearchField);
+}
+
+// Inicializar la búsqueda al cargar la página
+document.addEventListener('DOMContentLoaded', function() {
+    // Otras inicializaciones...
+    initializeSearch();
+});
+
+
 // Menú responsivo
 document.addEventListener('DOMContentLoaded', function() {
     const menuToggle = document.querySelector('.menu-toggle');
@@ -2006,9 +2276,11 @@ function updateFieldsOrder() {
 }
 
 
+
+
 // Event listener para importar archivo
 document.getElementById('fileInput').addEventListener('change', handleFileImport);
 
 // Inicialización
-updateSearchFields();
+initializeSearch();
 updateTable();

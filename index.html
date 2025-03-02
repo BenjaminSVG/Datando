@@ -70,27 +70,46 @@
             </div>
 
             <!-- Búsqueda -->
-            <div class="search-section">
-                <h2>Buscar Clientes</h2>
-                <div class="search-controls">
-                    <select id="searchField"></select>
-                    <select id="searchOperator">
-                        <option value="contains">Contiene</option>
-                        <option value="equals">Igual a</option>
-                        <option value="notEquals">Distinto a</option>
-                        <option value="startsWith">Empieza con</option>
-                        <option value="endsWith">Termina con</option>
-                        <option value="greater">Mayor que</option>
-                        <option value="less">Menor que</option>
-                        <option value="greaterEqual">Mayor o igual que</option>
-                        <option value="lessEqual">Menor o igual que</option>
-                    </select>
-                    <input type="text" id="searchValue" placeholder="Valor a buscar">
-                    <button onclick="searchClients()" class="search-btn">
-                        <i class="fas fa-search"></i> Buscar
-                    </button>             
+        <div class="search-section">
+            <h2>Buscar Clientes</h2>
+            <div id="searchConditions">
+                <div class="search-condition">
+                    <div class="search-controls">
+                        <select class="searchField"></select>
+                        <select class="searchOperator">
+                            <option value="contains">Contiene</option>
+                            <option value="equals">Igual a</option>
+                            <option value="notEquals">Distinto a</option>
+                            <option value="startsWith">Empieza con</option>
+                            <option value="endsWith">Termina con</option>
+                            <option value="greater">Mayor que</option>
+                            <option value="less">Menor que</option>
+                            <option value="greaterEqual">Mayor o igual que</option>
+                            <option value="lessEqual">Menor o igual que</option>
+                        </select>
+                        <input type="text" class="searchValue" placeholder="Valor a buscar">
+                        <button class="remove-condition" style="display: none;">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
                 </div>
             </div>
+            
+            <div class="search-actions">
+                <div class="logical-operators">
+                    <select id="logicalOperator">
+                        <option value="and">Y (AND) - Cumplir todas las condiciones</option>
+                        <option value="or">O (OR) - Cumplir al menos una condición</option>
+                    </select>
+                    <button id="addCondition" class="add-condition-btn">
+                        <i class="fas fa-plus"></i> Agregar condición
+                    </button>
+                </div>
+                <button id="searchButton" class="search-btn">
+                    <i class="fas fa-search"></i> Buscar
+                </button>
+            </div>
+        </div>
 
             <!-- Tabla de datos -->
             <div class="table-section">
