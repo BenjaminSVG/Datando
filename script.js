@@ -43,13 +43,132 @@ function updateActiveFields() {
     fields.forEach((field, index) => {
         const fieldTag = document.createElement('div');
         fieldTag.className = 'field-tag';
-        fieldTag.innerHTML = `
-            ${field.name}${field.required ? ' *' : ''}
-            <span class="material-icons" onclick="removeField(${index})">close</span>
-        `;
+        
+        // Crear el nombre del campo
+        const fieldName = document.createElement('span');
+        fieldName.className = 'field-name';
+        fieldName.textContent = field.name;
+        
+        // Crear el indicador de requerido (asterisco)
+        const requiredIndicator = document.createElement('span');
+        requiredIndicator.className = 'required-indicator';
+        requiredIndicator.textContent = field.required ? '*' : '';
+        requiredIndicator.style.color = field.required ? 'var(--danger-color)' : 'transparent';
+        
+        // Crear el botón de opciones (tres puntos)
+        const optionsButton = document.createElement('span');
+        optionsButton.className = 'material-icons options-button';
+        optionsButton.textContent = 'more_vert';
+        optionsButton.style.cursor = 'pointer';
+        optionsButton.style.fontSize = '16px';
+        optionsButton.style.marginLeft = '5px';
+        optionsButton.style.marginRight = '5px';
+        optionsButton.style.opacity = '0.7';
+        
+        // Crear el menú desplegable (inicialmente oculto)
+        const dropdown = document.createElement('div');
+        dropdown.className = 'field-options-dropdown';
+        dropdown.style.position = 'absolute';
+        dropdown.style.backgroundColor = 'var(--surface-color)';
+        dropdown.style.boxShadow = 'var(--shadow-md)';
+        dropdown.style.borderRadius = 'var(--border-radius-md)';
+        dropdown.style.padding = '8px 0';
+        dropdown.style.zIndex = '100';
+        dropdown.style.minWidth = '150px';
+        dropdown.style.display = 'none';
+        
+        // Opción para cambiar si es requerido
+        const requiredOption = document.createElement('div');
+        requiredOption.className = 'dropdown-option';
+        requiredOption.style.padding = '8px 16px';
+        requiredOption.style.cursor = 'pointer';
+        requiredOption.style.display = 'flex';
+        requiredOption.style.alignItems = 'center';
+        requiredOption.style.color = 'var(--text-color)';
+        requiredOption.style.gap = '8px';
+        
+        const requiredIcon = document.createElement('i');
+        requiredIcon.className = field.required ? 'fas fa-toggle-on' : 'fas fa-toggle-off';
+        requiredIcon.style.color = field.required ? 'var(--primary-color)' : 'var(--text-secondary)';
+        
+        requiredOption.appendChild(requiredIcon);
+        requiredOption.appendChild(document.createTextNode(field.required ? 'Hacer opcional' : 'Hacer requerido'));
+        
+        requiredOption.addEventListener('mouseover', function() {
+            this.style.backgroundColor = 'rgba(0, 0, 0, 0.05)';
+        });
+        
+        requiredOption.addEventListener('mouseout', function() {
+            this.style.backgroundColor = 'transparent';
+        });
+        
+        requiredOption.addEventListener('click', function(e) {
+            e.stopPropagation();
+            
+            // Cambiar el estado de requerido
+            fields[index].required = !fields[index].required;
+            
+            // Cerrar el dropdown
+            dropdown.style.display = 'none';
+            
+            // Actualizar la interfaz
+            updateActiveFields();
+            updateClientForm();
+            updateTable();
+        });
+        
+        dropdown.appendChild(requiredOption);
+        
+        // Evento para mostrar/ocultar el dropdown
+        optionsButton.addEventListener('click', function(e) {
+            e.stopPropagation();
+            
+            // Cerrar todos los otros dropdowns primero
+            document.querySelectorAll('.field-options-dropdown').forEach(d => {
+                if (d !== dropdown) d.style.display = 'none';
+            });
+            
+            // Alternar la visibilidad del dropdown actual
+            dropdown.style.display = dropdown.style.display === 'none' ? 'block' : 'none';
+            
+            // Posicionar el dropdown debajo del botón
+            const rect = this.getBoundingClientRect();
+            dropdown.style.top = '100%';
+            dropdown.style.right = '0';
+        });
+        
+        // Cerrar el dropdown al hacer clic en cualquier parte del documento
+        document.addEventListener('click', function() {
+            dropdown.style.display = 'none';
+        });
+        
+        // Botón para eliminar el campo
+        const removeButton = document.createElement('span');
+        removeButton.className = 'material-icons';
+        removeButton.textContent = 'close';
+        removeButton.onclick = function(e) {
+            e.stopPropagation();
+            removeField(index);
+        };
+        
+        // Agregar todos los elementos al fieldTag
+        fieldTag.appendChild(fieldName);
+        fieldTag.appendChild(requiredIndicator);
+        fieldTag.appendChild(optionsButton);
+        fieldTag.appendChild(dropdown);
+        fieldTag.appendChild(removeButton);
+        
+        // Asegurar que el fieldTag tenga posición relativa para el dropdown
+        fieldTag.style.position = 'relative';
+        
         activeFields.appendChild(fieldTag);
     });
+    
+    // Hacer que los campos sean arrastrables
+    makeFieldsDraggable();
 }
+
+
 
 // Eliminar campo
 function removeField(index) {
@@ -1761,6 +1880,131 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 });
+
+// Función para hacer que los campos sean arrastrables
+function makeFieldsDraggable() {
+    const activeFields = document.getElementById('activeFields');
+    
+    // Habilitar Sortable.js si está disponible, de lo contrario usar HTML5 Drag and Drop API
+    if (typeof Sortable !== 'undefined') {
+        new Sortable(activeFields, {
+            animation: 150,
+            ghostClass: 'field-tag-ghost',
+            onEnd: function() {
+                // Actualizar el orden de los campos en el array
+                updateFieldsOrder();
+            }
+        });
+    } else {
+        // Implementación con HTML5 Drag and Drop API
+        const fieldTags = activeFields.querySelectorAll('.field-tag');
+        
+        fieldTags.forEach(tag => {
+            tag.setAttribute('draggable', 'true');
+            
+            // Agregar eventos de arrastrar
+            tag.addEventListener('dragstart', handleDragStart);
+            tag.addEventListener('dragover', handleDragOver);
+            tag.addEventListener('dragenter', handleDragEnter);
+            tag.addEventListener('dragleave', handleDragLeave);
+            tag.addEventListener('drop', handleDrop);
+            tag.addEventListener('dragend', handleDragEnd);
+        });
+    }
+}
+
+// Variables para el arrastre
+let dragSrcEl = null;
+
+// Manejadores de eventos para HTML5 Drag and Drop
+function handleDragStart(e) {
+    this.style.opacity = '0.4';
+    
+    dragSrcEl = this;
+    
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/html', this.innerHTML);
+    
+    // Agregar clase para estilo visual
+    this.classList.add('dragging');
+}
+
+function handleDragOver(e) {
+    if (e.preventDefault) {
+        e.preventDefault();
+    }
+    
+    e.dataTransfer.dropEffect = 'move';
+    
+    return false;
+}
+
+function handleDragEnter(e) {
+    this.classList.add('over');
+}
+
+function handleDragLeave(e) {
+    this.classList.remove('over');
+}
+
+function handleDrop(e) {
+    if (e.stopPropagation) {
+        e.stopPropagation();
+    }
+    
+    // No hacer nada si se suelta sobre sí mismo
+    if (dragSrcEl !== this) {
+        // Obtener índices para reordenar el array de campos
+        const allFields = Array.from(document.querySelectorAll('.field-tag'));
+        const fromIndex = allFields.indexOf(dragSrcEl);
+        const toIndex = allFields.indexOf(this);
+        
+        // Reordenar el array de campos
+        const movedField = fields.splice(fromIndex, 1)[0];
+        fields.splice(toIndex, 0, movedField);
+        
+        // Actualizar la interfaz
+        updateActiveFields();
+        updateClientForm();
+        updateSearchFields();
+        updateTable();
+    }
+    
+    return false;
+}
+
+function handleDragEnd(e) {
+    // Eliminar clases de estilo visual
+    const fieldTags = document.querySelectorAll('.field-tag');
+    fieldTags.forEach(tag => {
+        tag.classList.remove('over', 'dragging');
+        tag.style.opacity = '1';
+    });
+}
+
+// Actualizar el orden de los campos basado en el DOM
+function updateFieldsOrder() {
+    const fieldTags = Array.from(document.querySelectorAll('.field-tag'));
+    const newFields = [];
+    
+    fieldTags.forEach(tag => {
+        // Extraer el nombre del campo del contenido del tag
+        const fieldName = tag.textContent.trim().replace(' *', '').replace('close', '').trim();
+        const field = fields.find(f => f.name === fieldName);
+        if (field) {
+            newFields.push(field);
+        }
+    });
+    
+    // Actualizar el array de campos con el nuevo orden
+    fields = newFields;
+    
+    // Actualizar la interfaz
+    updateClientForm();
+    updateSearchFields();
+    updateTable();
+}
+
 
 // Event listener para importar archivo
 document.getElementById('fileInput').addEventListener('change', handleFileImport);

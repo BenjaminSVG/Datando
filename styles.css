@@ -121,6 +121,18 @@ body.dark-mode .main-content {
 }
 
 /* Secciones */
+.config-section {
+    margin-bottom: 40px;
+    padding: 25px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-lg);
+    transition: all var(--transition-normal);
+    box-shadow: var(--shadow-sm);
+    position: relative;
+    overflow: visible; /* Cambiar de 'hidden' a 'visible' para permitir que el dropdown se muestre fuera del contenedor */
+    min-height: 200px; /* Establecer una altura mínima */
+}
+
 .config-section, .input-section, .search-section, .table-section {
     margin-bottom: 40px;
     padding: 25px;
@@ -185,6 +197,21 @@ body.dark-mode h2::after {
     margin-bottom: 20px;
     flex-wrap: wrap;
     align-items: center;
+}
+
+.field-options-dropdown {
+    position: absolute;
+    background-color: var(--surface-color);
+    box-shadow: var(--shadow-md);
+    border-radius: var(--border-radius-md);
+    padding: 8px 0;
+    z-index: 100;
+    min-width: 150px;
+    display: none;
+    top: 100%;
+    right: 0;
+    margin-top: 5px;
+    border: 1px solid var(--border-color);
 }
 
 /* Inputs y selects */
@@ -277,6 +304,7 @@ body.dark-mode button:hover {
     flex-wrap: wrap;
     gap: 12px;
     margin-top: 15px;
+    margin-bottom: 30px;
 }
 
 .field-tag {
@@ -290,6 +318,14 @@ body.dark-mode button:hover {
     font-size: 0.9rem;
     box-shadow: var(--shadow-sm);
     transition: all var(--transition-normal);
+    position: relative;
+    margin-bottom: 10px; /* Añadir margen inferior para separar los campos */
+}
+
+/* Modo oscuro para el dropdown */
+body.dark-mode .field-options-dropdown {
+    background-color: var(--dark-surface);
+    border-color: var(--dark-border);
 }
 
 .field-tag:hover {
@@ -302,11 +338,26 @@ body.dark-mode button:hover {
     display: flex;
     align-items: center;
     justify-content: center;
+    background-color: transparent; /* Cambiar de rgba(255, 255, 255, 0.2) a transparent */
+    transition: background-color var(--transition-normal);
+}
+
+.field-tag .material-icons,
+.field-tag span.material-icons {
     width: 20px;
     height: 20px;
     border-radius: 50%;
     background-color: rgba(255, 255, 255, 0.2);
-    transition: background-color var(--transition-normal);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.field-tag .field-name {
+    background: none;
+    border-radius: 0;
+    width: auto;
+    height: auto;
 }
 
 .field-tag span:hover {
@@ -1680,3 +1731,90 @@ body.dark-mode .scroll-to-bottom {
 .export-dropdown-content.show {
     display: block;
 }
+
+/* Estilos para drag and drop */
+.field-tag {
+    cursor: grab;
+    user-select: none;
+    transition: all var(--transition-normal);
+}
+
+.field-tag.dragging {
+    opacity: 0.4;
+    cursor: grabbing;
+}
+
+.field-tag.over {
+    transform: scale(1.05);
+    box-shadow: var(--shadow-lg);
+    border: 2px dashed rgba(255, 255, 255, 0.5);
+}
+
+.field-tag-ghost {
+    opacity: 0.5;
+    background: rgba(255, 255, 255, 0.2);
+}
+
+/* Indicador visual durante el arrastre */
+.field-tag::before {
+    content: '⋮';
+    margin-right: 5px;
+    opacity: 0.7;
+    cursor: grab;
+}
+
+.field-tag.dragging::before {
+    cursor: grabbing;
+}
+
+/* Estilos para el indicador de campo requerido */
+.required-indicator {
+    cursor: pointer;
+    color: var(--danger-color);
+    font-weight: bold;
+    transition: all var(--transition-normal);
+    display: inline-block;
+    min-width: 10px;
+}
+
+.required-indicator:hover {
+    transform: scale(1.2);
+}
+
+body.dark-mode .required-indicator {
+    color: var(--dark-danger);
+}
+
+/* Tooltip para indicar la funcionalidad */
+.field-tag {
+    position: relative;
+}
+
+.field-tag .required-indicator {
+    background: none;
+    border-radius: 0;
+    width: auto;
+    height: auto;
+}
+
+.field-tag .required-indicator:hover::after {
+    content: "Clic para cambiar si es requerido";
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 5px 10px;
+    border-radius: var(--border-radius-sm);
+    font-size: 0.8rem;
+    white-space: nowrap;
+    z-index: 100;
+    pointer-events: none;
+}
+
+/* Ajuste para el nombre del campo */
+.field-name {
+    margin-right: 2px;
+}
+
