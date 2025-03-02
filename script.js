@@ -2162,8 +2162,10 @@ function initializeTableControls() {
     
     // Mover la tabla al contenedor de zoom
     const table = tableContainer.querySelector('table');
-    tableZoomContainer.appendChild(table);
-    tableContainer.appendChild(tableZoomContainer);
+    if (table) {
+        tableZoomContainer.appendChild(table);
+        tableContainer.appendChild(tableZoomContainer);
+    }
     
     // Crear contenedor para la barra de desplazamiento fija
     const fixedScrollContainer = document.createElement('div');
@@ -2174,8 +2176,20 @@ function initializeTableControls() {
     scrollGhost.className = 'scroll-ghost';
     fixedScrollContainer.appendChild(scrollGhost);
     
+    // Crear indicador visual de scroll
+    const scrollIndicator = document.createElement('div');
+    scrollIndicator.className = 'scroll-indicator';
+    scrollIndicator.innerHTML = '<i class="fas fa-arrows-alt-h"></i> Desliza para ver más';
+    fixedScrollContainer.appendChild(scrollIndicator);
+    
     // Insertar el contenedor de scroll antes del contenedor de la tabla
     tableSection.insertBefore(fixedScrollContainer, tableContainer);
+    
+    // Crear indicador de hover para la tabla
+    const hoverIndicator = document.createElement('div');
+    hoverIndicator.className = 'table-hover-indicator';
+    hoverIndicator.textContent = 'Scroll disponible';
+    tableContainer.appendChild(hoverIndicator);
     
     // Configurar sincronización de scroll
     setupScrollSync(fixedScrollContainer, tableContainer);
@@ -2185,11 +2199,56 @@ function initializeTableControls() {
     
     // Agregar evento de redimensionamiento para verificar la barra de desplazamiento
     window.addEventListener('resize', checkIfScrollbarNeeded);
+    
+    // Crear barra de desplazamiento flotante para móviles
+    createFloatingScrollbar(tableContainer);
+}
+
+// Función para crear una barra de desplazamiento flotante para móviles
+function createFloatingScrollbar(tableContainer) {
+    // Crear el contenedor flotante
+    const floatingScrollContainer = document.createElement('div');
+    floatingScrollContainer.className = 'floating-scroll-container';
+    
+    // Crear elemento fantasma para sincronizar el scroll
+    const scrollGhost = document.createElement('div');
+    scrollGhost.className = 'scroll-ghost';
+    floatingScrollContainer.appendChild(scrollGhost);
+    
+    document.body.appendChild(floatingScrollContainer);
+    
+    // Mostrar la barra flotante cuando se hace hover en la tabla
+    tableContainer.addEventListener('mouseenter', () => {
+        if (isScrollNeeded()) {
+            floatingScrollContainer.classList.add('visible');
+            
+            // Actualizar el ancho del elemento fantasma
+            const table = document.querySelector('#clientsTable');
+            if (table) {
+                scrollGhost.style.width = `${table.offsetWidth}px`;
+            }
+        }
+    });
+    
+    tableContainer.addEventListener('mouseleave', () => {
+        floatingScrollContainer.classList.remove('visible');
+    });
+    
+    // Sincronizar scroll
+    floatingScrollContainer.addEventListener('scroll', () => {
+        tableContainer.scrollLeft = floatingScrollContainer.scrollLeft;
+    });
+    
+    tableContainer.addEventListener('scroll', () => {
+        floatingScrollContainer.scrollLeft = tableContainer.scrollLeft;
+    });
 }
 
 // Función para aplicar el zoom a la tabla
 function applyZoom() {
     const tableZoomContainer = document.querySelector('.table-zoom-container');
+    if (!tableZoomContainer) return;
+    
     tableZoomContainer.style.transform = `scale(${currentZoom / 100})`;
     
     // Ajustar el ancho del contenedor para mantener el contenido visible
@@ -2199,8 +2258,30 @@ function applyZoom() {
         tableZoomContainer.style.width = '100%';
     }
     
+    // Ajustar la altura de la sección de tabla para adaptarse al contenido con zoom
+    adjustTableSectionHeight();
+    
     // Verificar si se necesita la barra de desplazamiento después del zoom
     setTimeout(checkIfScrollbarNeeded, 300);
+}
+
+// Función para ajustar la altura de la sección de tabla
+function adjustTableSectionHeight() {
+    const tableSection = document.querySelector('.table-section');
+    const tableZoomContainer = document.querySelector('.table-zoom-container');
+    const table = document.querySelector('#clientsTable');
+    
+    if (!tableSection || !tableZoomContainer || !table) return;
+    
+    // Calcular la altura necesaria basada en el zoom
+    const scaledHeight = table.offsetHeight * (currentZoom / 100);
+    const extraPadding = 60; // Espacio adicional para padding y otros elementos
+    
+    // Establecer una altura mínima para la sección
+    const minHeight = 300;
+    
+    // Aplicar la altura calculada, pero no menos que la altura mínima
+    tableSection.style.minHeight = `${Math.max(scaledHeight + extraPadding, minHeight)}px`;
 }
 
 // Función para verificar si se necesita la barra de desplazamiento
@@ -2222,6 +2303,24 @@ function checkIfScrollbarNeeded() {
         const scrollGhost = fixedScrollContainer.querySelector('.scroll-ghost');
         scrollGhost.style.width = `${table.offsetWidth}px`;
     }
+    
+    // Actualizar el indicador de hover
+    const hoverIndicator = tableContainer.querySelector('.table-hover-indicator');
+    if (hoverIndicator) {
+        hoverIndicator.style.display = isScrollNeeded ? 'block' : 'none';
+    }
+    
+    return isScrollNeeded;
+}
+
+// Función para comprobar si se necesita scroll
+function isScrollNeeded() {
+    const tableContainer = document.querySelector('.table-container');
+    const table = document.querySelector('#clientsTable');
+    
+    if (!tableContainer || !table) return false;
+    
+    return table.offsetWidth > tableContainer.clientWidth;
 }
 
 // Función para sincronizar el scroll entre los dos contenedores
@@ -2235,6 +2334,54 @@ function setupScrollSync(fixedScrollContainer, tableContainer) {
     tableContainer.addEventListener('scroll', () => {
         fixedScrollContainer.scrollLeft = tableContainer.scrollLeft;
     });
+    
+    // Mejorar la experiencia táctil
+    let isScrolling = false;
+    let startX;
+    let scrollLeft;
+    
+    fixedScrollContainer.addEventListener('mousedown', (e) => {
+        isScrolling = true;
+        startX = e.pageX - fixedScrollContainer.offsetLeft;
+        scrollLeft = fixedScrollContainer.scrollLeft;
+        fixedScrollContainer.style.cursor = 'grabbing';
+    });
+    
+    fixedScrollContainer.addEventListener('mouseleave', () => {
+        isScrolling = false;
+        fixedScrollContainer.style.cursor = 'grab';
+    });
+    
+    fixedScrollContainer.addEventListener('mouseup', () => {
+        isScrolling = false;
+        fixedScrollContainer.style.cursor = 'grab';
+    });
+    
+    fixedScrollContainer.addEventListener('mousemove', (e) => {
+        if (!isScrolling) return;
+        e.preventDefault();
+        const x = e.pageX - fixedScrollContainer.offsetLeft;
+        const walk = (x - startX) * 2; // Multiplicador para ajustar la velocidad
+        fixedScrollContainer.scrollLeft = scrollLeft - walk;
+    });
+    
+    // Soporte para eventos táctiles
+    fixedScrollContainer.addEventListener('touchstart', (e) => {
+        isScrolling = true;
+        startX = e.touches[0].pageX - fixedScrollContainer.offsetLeft;
+        scrollLeft = fixedScrollContainer.scrollLeft;
+    });
+    
+    fixedScrollContainer.addEventListener('touchend', () => {
+        isScrolling = false;
+    });
+    
+    fixedScrollContainer.addEventListener('touchmove', (e) => {
+        if (!isScrolling) return;
+        const x = e.touches[0].pageX - fixedScrollContainer.offsetLeft;
+        const walk = (x - startX) * 2;
+        fixedScrollContainer.scrollLeft = scrollLeft - walk;
+    });
 }
 
 // Modificar la función updateTable para que actualice la barra de desplazamiento
@@ -2243,7 +2390,10 @@ updateTable = function(data = clients) {
     originalUpdateTable(data);
     
     // Verificar si se necesita la barra de desplazamiento después de actualizar la tabla
-    setTimeout(checkIfScrollbarNeeded, 300);
+    setTimeout(() => {
+        checkIfScrollbarNeeded();
+        adjustTableSectionHeight();
+    }, 300);
 };
 
 // Menú responsivo
