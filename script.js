@@ -2096,6 +2096,155 @@ document.addEventListener('DOMContentLoaded', function() {
     initializeSearch();
 });
 
+// Variables para el zoom
+let currentZoom = 100; // Porcentaje de zoom inicial
+const minZoom = 50;    // Zoom mínimo
+const maxZoom = 200;   // Zoom máximo
+const zoomStep = 10;   // Incremento/decremento de zoom
+
+// Función para inicializar los controles de zoom y scroll
+function initializeTableControls() {
+    // Crear controles de zoom
+    const tableControls = document.querySelector('.table-controls');
+    
+    const zoomControls = document.createElement('div');
+    zoomControls.className = 'zoom-controls';
+    zoomControls.innerHTML = `
+        <button class="zoom-btn zoom-out" title="Reducir zoom">
+            <i class="fas fa-search-minus"></i>
+        </button>
+        <span class="zoom-level">100%</span>
+        <button class="zoom-btn zoom-in" title="Aumentar zoom">
+            <i class="fas fa-search-plus"></i>
+        </button>
+        <button class="zoom-btn zoom-reset" title="Restablecer zoom">
+            <i class="fas fa-undo"></i>
+        </button>
+    `;
+    
+    tableControls.appendChild(zoomControls);
+    
+    // Configurar eventos para los botones de zoom
+    const zoomInBtn = zoomControls.querySelector('.zoom-in');
+    const zoomOutBtn = zoomControls.querySelector('.zoom-out');
+    const zoomResetBtn = zoomControls.querySelector('.zoom-reset');
+    const zoomLevelDisplay = zoomControls.querySelector('.zoom-level');
+    
+    zoomInBtn.addEventListener('click', () => {
+        if (currentZoom < maxZoom) {
+            currentZoom += zoomStep;
+            applyZoom();
+            zoomLevelDisplay.textContent = `${currentZoom}%`;
+        }
+    });
+    
+    zoomOutBtn.addEventListener('click', () => {
+        if (currentZoom > minZoom) {
+            currentZoom -= zoomStep;
+            applyZoom();
+            zoomLevelDisplay.textContent = `${currentZoom}%`;
+        }
+    });
+    
+    zoomResetBtn.addEventListener('click', () => {
+        currentZoom = 100;
+        applyZoom();
+        zoomLevelDisplay.textContent = `${currentZoom}%`;
+    });
+    
+    // Crear contenedor para la barra de desplazamiento fija
+    const tableSection = document.querySelector('.table-section');
+    const tableContainer = document.querySelector('.table-container');
+    
+    // Envolver la tabla en un contenedor para el zoom
+    const tableZoomContainer = document.createElement('div');
+    tableZoomContainer.className = 'table-zoom-container';
+    
+    // Mover la tabla al contenedor de zoom
+    const table = tableContainer.querySelector('table');
+    tableZoomContainer.appendChild(table);
+    tableContainer.appendChild(tableZoomContainer);
+    
+    // Crear contenedor para la barra de desplazamiento fija
+    const fixedScrollContainer = document.createElement('div');
+    fixedScrollContainer.className = 'fixed-scroll-container';
+    
+    // Crear elemento fantasma para sincronizar el scroll
+    const scrollGhost = document.createElement('div');
+    scrollGhost.className = 'scroll-ghost';
+    fixedScrollContainer.appendChild(scrollGhost);
+    
+    // Insertar el contenedor de scroll antes del contenedor de la tabla
+    tableSection.insertBefore(fixedScrollContainer, tableContainer);
+    
+    // Configurar sincronización de scroll
+    setupScrollSync(fixedScrollContainer, tableContainer);
+    
+    // Verificar si se necesita la barra de desplazamiento
+    checkIfScrollbarNeeded();
+    
+    // Agregar evento de redimensionamiento para verificar la barra de desplazamiento
+    window.addEventListener('resize', checkIfScrollbarNeeded);
+}
+
+// Función para aplicar el zoom a la tabla
+function applyZoom() {
+    const tableZoomContainer = document.querySelector('.table-zoom-container');
+    tableZoomContainer.style.transform = `scale(${currentZoom / 100})`;
+    
+    // Ajustar el ancho del contenedor para mantener el contenido visible
+    if (currentZoom > 100) {
+        tableZoomContainer.style.width = `${currentZoom}%`;
+    } else {
+        tableZoomContainer.style.width = '100%';
+    }
+    
+    // Verificar si se necesita la barra de desplazamiento después del zoom
+    setTimeout(checkIfScrollbarNeeded, 300);
+}
+
+// Función para verificar si se necesita la barra de desplazamiento
+function checkIfScrollbarNeeded() {
+    const tableContainer = document.querySelector('.table-container');
+    const fixedScrollContainer = document.querySelector('.fixed-scroll-container');
+    const table = document.querySelector('#clientsTable');
+    
+    if (!tableContainer || !fixedScrollContainer || !table) return;
+    
+    // Verificar si el ancho de la tabla es mayor que el contenedor
+    const isScrollNeeded = table.offsetWidth > tableContainer.clientWidth;
+    
+    // Mostrar u ocultar el contenedor de scroll fijo
+    fixedScrollContainer.style.display = isScrollNeeded ? 'block' : 'none';
+    
+    // Actualizar el ancho del elemento fantasma para que coincida con la tabla
+    if (isScrollNeeded) {
+        const scrollGhost = fixedScrollContainer.querySelector('.scroll-ghost');
+        scrollGhost.style.width = `${table.offsetWidth}px`;
+    }
+}
+
+// Función para sincronizar el scroll entre los dos contenedores
+function setupScrollSync(fixedScrollContainer, tableContainer) {
+    // Sincronizar scroll del contenedor fijo al contenedor de la tabla
+    fixedScrollContainer.addEventListener('scroll', () => {
+        tableContainer.scrollLeft = fixedScrollContainer.scrollLeft;
+    });
+    
+    // Sincronizar scroll del contenedor de la tabla al contenedor fijo
+    tableContainer.addEventListener('scroll', () => {
+        fixedScrollContainer.scrollLeft = tableContainer.scrollLeft;
+    });
+}
+
+// Modificar la función updateTable para que actualice la barra de desplazamiento
+const originalUpdateTable = updateTable;
+updateTable = function(data = clients) {
+    originalUpdateTable(data);
+    
+    // Verificar si se necesita la barra de desplazamiento después de actualizar la tabla
+    setTimeout(checkIfScrollbarNeeded, 300);
+};
 
 // Menú responsivo
 document.addEventListener('DOMContentLoaded', function() {
@@ -2282,5 +2431,6 @@ function updateFieldsOrder() {
 document.getElementById('fileInput').addEventListener('change', handleFileImport);
 
 // Inicialización
+initializeTableControls();
 initializeSearch();
 updateTable();
