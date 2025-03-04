@@ -925,10 +925,15 @@ function exportToJSON() {
 
 // Exportar a formato Access (ACCDB)
 function exportToAccess() {
-    if (clients.length === 0) return;
+    if (clients.length === 0) {
+        alert('No hay datos para exportar');
+        return;
+    }
     
     // Obtener el título de la base de datos
     const dbTitle = document.getElementById('databaseTitle').value || 'Base de Datos';
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+    const safeDbTitle = dbTitle.replace(/[^a-zA-Z0-9]/g, '_');
     
     // Crear un objeto con la estructura de datos para Access
     const accessData = {
@@ -961,35 +966,63 @@ function exportToAccess() {
     // Convertir a XML (formato que Access puede importar)
     const xml = convertToAccessXML(accessData);
     
-    // Crear un archivo de texto con instrucciones
+    // Crear un archivo de texto con instrucciones detalladas
     const instructions = `
-    INSTRUCCIONES PARA IMPORTAR A ACCESS:
+INSTRUCCIONES PARA IMPORTAR A MICROSOFT ACCESS
+=============================================
+
+1. PREPARACIÓN:
+   - Guarde el archivo XML adjunto (${safeDbTitle}_data_${timestamp}.xml) en una ubicación conocida.
+   - Abra Microsoft Access.
+
+2. IMPORTACIÓN:
+   a) Cree una nueva base de datos o abra una existente.
+   b) Vaya a la pestaña "Datos externos" en la cinta de opciones.
+   c) En el grupo "Importar y vincular", haga clic en "XML File".
+   d) Seleccione "Importar la estructura y los datos de origen en una nueva tabla".
+   e) Haga clic en "Examinar" y seleccione el archivo XML guardado.
+   f) Siga el asistente de importación:
+      - En la primera pantalla, haga clic en "Aceptar".
+      - En la segunda pantalla, puede personalizar la estructura de la tabla.
+      - En la tercera pantalla, puede establecer una clave principal.
+      - Finalice el asistente haciendo clic en "Finalizar".
+
+3. NOTAS IMPORTANTES:
+   - Los campos de tipo imagen se han exportado como texto con el valor "[Imagen]".
+   - Los campos de estado se han exportado como texto ("Activo" o "Inactivo").
+   - Si encuentra algún problema con caracteres especiales, asegúrese de que Access esté configurado para usar codificación UTF-8.
+
+4. INFORMACIÓN DE LA BASE DE DATOS:
+   - Nombre: ${dbTitle}
+   - Fecha de exportación: ${new Date().toLocaleString()}
+   - Número de registros: ${clients.length}
+   - Campos: ${fields.map(f => f.name).join(', ')}
+
+Para más información, consulte la documentación de Microsoft Access sobre importación de archivos XML.
+`;
     
-    1. Abra Microsoft Access
-    2. Cree una nueva base de datos o abra una existente
-    3. En la pestaña "Datos externos", seleccione "XML File"
-    4. Seleccione "Importar"
-    5. Busque y seleccione este archivo XML
-    6. Siga las instrucciones del asistente de importación
+    // Descargar el archivo de instrucciones
+    const instructionsBlob = new Blob([instructions], { type: 'text/plain' });
+    const instructionsUrl = window.URL.createObjectURL(instructionsBlob);
+    const instructionsLink = document.createElement('a');
+    instructionsLink.setAttribute('href', instructionsUrl);
+    instructionsLink.setAttribute('download', `${safeDbTitle}_instrucciones_${timestamp}.txt`);
+    instructionsLink.click();
+    window.URL.revokeObjectURL(instructionsUrl);
     
-    Nota: Este archivo XML contiene los datos exportados de su base de datos "${dbTitle}".
-    `;
+    // Descargar el archivo XML
+    const xmlBlob = new Blob([xml], { type: 'application/xml' });
+    const xmlUrl = window.URL.createObjectURL(xmlBlob);
+    const xmlLink = document.createElement('a');
+    xmlLink.setAttribute('href', xmlUrl);
+    xmlLink.setAttribute('download', `${safeDbTitle}_data_${timestamp}.xml`);
+    xmlLink.click();
+    window.URL.revokeObjectURL(xmlUrl);
     
-    // Combinar instrucciones y XML
-    const fullContent = instructions + "\n\n" + xml;
-    
-    // Crear el blob y descargar
-    const blob = new Blob([fullContent], { type: 'application/xml' });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-    a.setAttribute('href', url);
-    a.setAttribute('download', `${dbTitle}_${timestamp}.accdb.xml`);
-    a.click();
-    window.URL.revokeObjectURL(url);
-    
-    // Mostrar instrucciones adicionales
-    alert('Se ha generado un archivo XML compatible con Access.\nSiga las instrucciones incluidas en el archivo para importarlo a Microsoft Access.');
+    // Mostrar mensaje de éxito
+    setTimeout(() => {
+        alert('Se han generado dos archivos:\n\n1. Un archivo de instrucciones (.txt)\n2. Un archivo XML con los datos\n\nSiga las instrucciones del archivo de texto para importar los datos a Microsoft Access.');
+    }, 500);
 }
 
 // Mapear tipos de campo a tipos de Access
@@ -1006,23 +1039,27 @@ function mapTypeToAccessType(fieldType) {
 
 // Convertir datos a formato XML para Access
 function convertToAccessXML(data) {
+    // Crear un nombre de tabla seguro (sin espacios ni caracteres especiales)
+    const tableName = data.tables[0].name.replace(/[^a-zA-Z0-9]/g, '_');
+    
     let xml = '<?xml version="1.0" encoding="UTF-8"?>\n';
     xml += '<dataroot xmlns:od="urn:schemas-microsoft-com:officedata">\n';
     
     // Para cada fila de datos
-    data.tables[0].rows.forEach(row => {
-        xml += `  <${data.tables[0].name}>\n`;
+    data.tables[0].rows.forEach((row, index) => {
+        xml += `  <${tableName}>\n`;
         
         // Para cada columna en la fila
         data.tables[0].columns.forEach(column => {
+            const columnName = column.name.replace(/[^a-zA-Z0-9]/g, '_');
             const value = row[column.name] !== undefined && row[column.name] !== null 
                 ? row[column.name] 
                 : '';
             
-            xml += `    <${column.name}>${escapeXML(value)}</${column.name}>\n`;
+            xml += `    <${columnName}>${escapeXML(value)}</${columnName}>\n`;
         });
         
-        xml += `  </${data.tables[0].name}>\n`;
+        xml += `  </${tableName}>\n`;
     });
     
     xml += '</dataroot>';
@@ -1543,10 +1580,12 @@ function exportFilteredToAccess(filteredData) {
     
     // Obtener el título de la base de datos
     const dbTitle = document.getElementById('databaseTitle').value || 'Base de Datos';
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+    const safeDbTitle = dbTitle.replace(/[^a-zA-Z0-9]/g, '_') + '_filtrado';
     
     // Crear un objeto con la estructura de datos para Access
     const accessData = {
-        database: dbTitle,
+        database: dbTitle + ' (Filtrado)',
         tables: [
             {
                 name: "Clientes",
@@ -1575,15 +1614,64 @@ function exportFilteredToAccess(filteredData) {
     // Convertir a XML (formato que Access puede importar)
     const xml = convertToAccessXML(accessData);
     
-    // Crear el blob y descargar
-    const blob = new Blob([xml], { type: 'application/xml' });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-    a.setAttribute('href', url);
-    a.setAttribute('download', `filtered_${dbTitle}_${timestamp}.xml`);
-    a.click();
-    window.URL.revokeObjectURL(url);
+    // Crear un archivo de texto con instrucciones detalladas
+    const instructions = `
+INSTRUCCIONES PARA IMPORTAR A MICROSOFT ACCESS (DATOS FILTRADOS)
+===============================================================
+
+1. PREPARACIÓN:
+   - Guarde el archivo XML adjunto (${safeDbTitle}_data_${timestamp}.xml) en una ubicación conocida.
+   - Abra Microsoft Access.
+
+2. IMPORTACIÓN:
+   a) Cree una nueva base de datos o abra una existente.
+   b) Vaya a la pestaña "Datos externos" en la cinta de opciones.
+   c) En el grupo "Importar y vincular", haga clic en "XML File".
+   d) Seleccione "Importar la estructura y los datos de origen en una nueva tabla".
+   e) Haga clic en "Examinar" y seleccione el archivo XML guardado.
+   f) Siga el asistente de importación:
+      - En la primera pantalla, haga clic en "Aceptar".
+      - En la segunda pantalla, puede personalizar la estructura de la tabla.
+      - En la tercera pantalla, puede establecer una clave principal.
+      - Finalice el asistente haciendo clic en "Finalizar".
+
+3. NOTAS IMPORTANTES:
+   - Estos datos representan un subconjunto filtrado de la base de datos original.
+   - Los campos de tipo imagen se han exportado como texto con el valor "[Imagen]".
+   - Los campos de estado se han exportado como texto ("Activo" o "Inactivo").
+   - Si encuentra algún problema con caracteres especiales, asegúrese de que Access esté configurado para usar codificación UTF-8.
+
+4. INFORMACIÓN DE LA BASE DE DATOS FILTRADA:
+   - Nombre: ${dbTitle} (Filtrado)
+   - Fecha de exportación: ${new Date().toLocaleString()}
+   - Número de registros: ${filteredData.length}
+   - Campos: ${fields.map(f => f.name).join(', ')}
+
+Para más información, consulte la documentación de Microsoft Access sobre importación de archivos XML.
+`;
+    
+    // Descargar el archivo de instrucciones
+    const instructionsBlob = new Blob([instructions], { type: 'text/plain' });
+    const instructionsUrl = window.URL.createObjectURL(instructionsBlob);
+    const instructionsLink = document.createElement('a');
+    instructionsLink.setAttribute('href', instructionsUrl);
+    instructionsLink.setAttribute('download', `${safeDbTitle}_instrucciones_${timestamp}.txt`);
+    instructionsLink.click();
+    window.URL.revokeObjectURL(instructionsUrl);
+    
+    // Descargar el archivo XML
+    const xmlBlob = new Blob([xml], { type: 'application/xml' });
+    const xmlUrl = window.URL.createObjectURL(xmlBlob);
+    const xmlLink = document.createElement('a');
+    xmlLink.setAttribute('href', xmlUrl);
+    xmlLink.setAttribute('download', `${safeDbTitle}_data_${timestamp}.xml`);
+    xmlLink.click();
+    window.URL.revokeObjectURL(xmlUrl);
+    
+    // Mostrar mensaje de éxito
+    setTimeout(() => {
+        alert('Se han generado dos archivos para los datos filtrados:\n\n1. Un archivo de instrucciones (.txt)\n2. Un archivo XML con los datos\n\nSiga las instrucciones del archivo de texto para importar los datos a Microsoft Access.');
+    }, 500);
 }
 
 // Función para ordenar los datos de la tabla
