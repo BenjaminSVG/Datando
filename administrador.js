@@ -837,10 +837,19 @@ function exportToCSV(customData) {
     window.URL.revokeObjectURL(url);
 }
 
-// Modo oscuro
+// Dark mode toggle
 const darkModeToggle = document.getElementById('darkModeToggle');
-darkModeToggle.addEventListener('change', () => {
-    document.body.classList.toggle('dark-mode');
+const body = document.body;
+
+// Toggle dark mode
+darkModeToggle.addEventListener('change', function() {
+    if (this.checked) {
+        body.classList.add('dark-mode');
+        localStorage.setItem('theme', 'dark');
+    } else {
+        body.classList.remove('dark-mode');
+        localStorage.setItem('theme', 'light');
+    }
 });
 
 // Título personalizado
@@ -896,6 +905,13 @@ function handleFileImport(event) {
         };
         reader.readAsText(file);
     }
+}
+
+// Check for saved theme preference
+const savedTheme = localStorage.getItem('theme');
+if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+    body.classList.add('dark-mode');
+    darkModeToggle.checked = true;
 }
 
 // Función para exportar a JSON
@@ -2485,30 +2501,23 @@ updateTable = function(data = clients) {
 };
 
 // Menú responsivo
-document.addEventListener('DOMContentLoaded', function() {
-    const menuToggle = document.querySelector('.menu-toggle');
-    const navLinks = document.querySelector('.nav-links');
-    
-    if (menuToggle) {
-        menuToggle.addEventListener('click', function() {
-            navLinks.classList.toggle('show');
-        });
-    }
-    
-    // Activar enlaces del navbar
-    const navLinkElements = document.querySelectorAll('.nav-link');
-    navLinkElements.forEach(link => {
-        link.addEventListener('click', function() {
-            navLinkElements.forEach(l => l.classList.remove('active'));
-            this.classList.add('active');
-            
-            // Cerrar el menú móvil si está abierto
-            if (window.innerWidth <= 768) {
-                navLinks.classList.remove('show');
-            }
-        });
+const menuToggle = document.querySelector('.menu-toggle');
+const navLinks = document.querySelector('.nav-links');
+
+if (menuToggle) {
+    menuToggle.addEventListener('click', function() {
+        navLinks.classList.toggle('show');
+        // Cambiar icono basado en el estado del menú
+        const icon = this.querySelector('i');
+        if (navLinks.classList.contains('show')) {
+            icon.classList.remove('fa-bars');
+            icon.classList.add('fa-times');
+        } else {
+            icon.classList.remove('fa-times');
+            icon.classList.add('fa-bars');
+        }
     });
-});
+}
 
 // Toggle para el menú desplegable de exportación
 document.addEventListener('DOMContentLoaded', function() {

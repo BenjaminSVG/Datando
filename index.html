@@ -3,176 +3,241 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Administrador de Base de Datos</title>
-    <link rel="stylesheet" href="styles.css">
+    <title>Datando - Administrador de Base de Datos Simple y Potente</title>
+    <link rel="stylesheet" href="index_style.css">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
 </head>
 <body>
-    <nav class="navbar">
-        <div class="nav-content">
-            <div class="nav-brand">
-                <i class="fas fa-database"></i>
-                <span>DB Manager</span>
+        <!-- Navbar -->
+        <nav class="navbar">
+            <div class="nav-content">
+                <div class="nav-brand">
+                    <i class="fas fa-database"></i>
+                    <span>DB Manager</span>
+                </div>
+                <div class="nav-links">
+                    <a href="#home" class="nav-link active"><i class="fas fa-home"></i> Inicio</a>
+                    <a href="administrador.html" class="nav-link"><i class="fas fa-table"></i> Administrador de Datos</a>
+                    <a href="" class="nav-link"><i class="fas fa-book"></i> Tutorial</a>
+                    <a href="" class="nav-link"><i class="fa-solid fa-address-card"></i> Contacto</a>
+                </div>
+                <div class="menu-toggle">
+                    <i class="fas fa-bars"></i>
+                </div>
+                <div class="theme-switch">
+                    <label class="switch">
+                        <input type="checkbox" id="darkModeToggle">
+                        <span class="slider"></span>
+                    </label>
+                </div>
             </div>
-            <div class="nav-links">
-                <a href="#" class="nav-link"><i class="fas fa-home"></i> Inicio</a>
-                <a href="#" class="nav-link active"><i class="fas fa-table"></i> Administrador de Datos</a>
-                <a href="#" class="nav-link"><i class="fas fa-book"></i> Tutorial</a>
-                <a href="#" class="nav-link"><i class="fa-solid fa-address-card"></i> Contacto</a>
+        </nav>
+
+    <!-- Hero Section -->
+    <section id="home" class="hero">
+        <div class="container">
+            <div class="hero-content">
+                <h1>Gestiona tus datos de forma simple y eficiente</h1>
+                <p>Datando es una herramienta intuitiva para crear y administrar bases de datos sin necesidad de conocimientos técnicos.</p>
+                <div class="hero-buttons">
+                    <a href="administrador.html" class="btn btn-primary">
+                        <i class="fas fa-rocket"></i> Comenzar ahora
+                    </a>
+                    <a href="#what-is" class="btn btn-secondary">
+                        <i class="fas fa-info-circle"></i> Saber más
+                    </a>
+                </div>
             </div>
-            <div class="menu-toggle">
-                <i class="fas fa-bars"></i>
-            </div>
-            <div class="theme-switch">
-                <label class="switch">
-                    <input type="checkbox" id="darkModeToggle">
-                    <span class="slider"></span>
-                </label>
+            <div class="hero-image">
+                <img src="https://via.placeholder.com/600x400/2563eb/ffffff?text=Datando" alt="Datando Dashboard">
             </div>
         </div>
-    </nav>    
+    </section>
 
-    <div class="container">
-        <header>
-            <h1>Administrador de Base de Datos</h1>
-        </header>
-        
-        <div class="database-title">
-            <input type="text" id="databaseTitle" placeholder="Nombre de tu base de datos">
+    <!-- What Is Section -->
+    <section id="what-is" class="what-is">
+        <div class="container">
+            <div class="section-header">
+                <h2>¿Qué es Datando?</h2>
+                <p>Una solución simple para gestionar tus datos</p>
+            </div>
+            <div class="what-is-content">
+                <div class="what-is-text">
+                    <p>Datando es una aplicación web que te permite crear y gestionar bases de datos personalizadas sin necesidad de conocimientos técnicos o programación. Diseñada para ser intuitiva y fácil de usar, Datando te ayuda a organizar información de clientes, inventarios, proyectos o cualquier tipo de datos que necesites administrar.</p>
+                    <p>Con una interfaz moderna y adaptable, puedes acceder a tus datos desde cualquier dispositivo, realizar búsquedas avanzadas, filtrar información y exportar tus datos en diferentes formatos.</p>
+                </div>
+                <div class="what-is-image">
+                    <img src="https://via.placeholder.com/500x300/4f46e5/ffffff?text=Interfaz+Intuitiva" alt="Interfaz de Datando">
+                </div>
+            </div>
         </div>
+    </section>
 
-        <div class="main-content">
-            <!-- Configuración de campos -->
-            <div class="config-section">
-                <h2>Configuración de campos</h2>
-                <div class="field-creator">
-                    <input type="text" id="newFieldName" placeholder="Nombre del campo">
-                    <select id="newFieldType">
-                        <option value="text">Texto</option>
-                        <option value="number">Número</option>
-                        <option value="date">Fecha</option>
-                        <option value="image">Imagen</option>
-                        <option value="status">Estado</option>
-                    </select>
-                    <div class="required-field-toggle">
-                        <input type="checkbox" id="fieldRequired" checked>
-                        <label for="fieldRequired">Campo requerido</label>
+    <!-- Features Section -->
+    <section id="features" class="features">
+        <div class="container">
+            <div class="section-header">
+                <h2>Características</h2>
+                <p>Descubre todo lo que puedes hacer con Datando</p>
+            </div>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-columns"></i>
                     </div>
-                    <button onclick="addField()">Agregar Campo</button>
-                </div>                
-                <div id="activeFields" class="active-fields"></div>
+                    <h3>Campos personalizables</h3>
+                    <p>Crea campos de diferentes tipos: texto, números, fechas, imágenes y estados para adaptarse a tus necesidades.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-search"></i>
+                    </div>
+                    <h3>Búsqueda avanzada</h3>
+                    <p>Encuentra rápidamente la información que necesitas con filtros y condiciones múltiples.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-file-export"></i>
+                    </div>
+                    <h3>Exportación de datos</h3>
+                    <p>Exporta tus datos en formatos como Excel, JSON, Access o SQL para usarlos en otras aplicaciones.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-sort-amount-down"></i>
+                    </div>
+                    <h3>Ordenación y filtrado</h3>
+                    <p>Organiza tus datos como prefieras y filtra para ver solo lo que necesitas en cada momento.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-mobile-alt"></i>
+                    </div>
+                    <h3>Diseño responsive</h3>
+                    <p>Accede a tus datos desde cualquier dispositivo con una interfaz adaptada a cada pantalla.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-moon"></i>
+                    </div>
+                    <h3>Modo oscuro</h3>
+                    <p>Trabaja cómodamente en cualquier entorno con nuestro elegante modo oscuro integrado.</p>
+                </div>
             </div>
+        </div>
+    </section>
 
-            <!-- Formulario de entrada -->
-            <div class="input-section">
-                <h2>Agregar Nuevo Cliente</h2>
-                <form id="clientForm"></form>
+    <!-- Benefits Section -->
+    <section id="benefits" class="benefits">
+        <div class="container">
+            <div class="section-header">
+                <h2>Beneficios</h2>
+                <p>¿Por qué elegir Datando para gestionar tus datos?</p>
             </div>
-
-            <!-- Búsqueda -->
-        <div class="search-section">
-            <h2>Buscar Clientes</h2>
-            <div id="searchConditions">
-                <div class="search-condition">
-                    <div class="search-controls">
-                        <select class="searchField"></select>
-                        <select class="searchOperator">
-                            <option value="contains">Contiene</option>
-                            <option value="equals">Igual a</option>
-                            <option value="notEquals">Distinto a</option>
-                            <option value="startsWith">Empieza con</option>
-                            <option value="endsWith">Termina con</option>
-                            <option value="greater">Mayor que</option>
-                            <option value="less">Menor que</option>
-                            <option value="greaterEqual">Mayor o igual que</option>
-                            <option value="lessEqual">Menor o igual que</option>
-                        </select>
-                        <input type="text" class="searchValue" placeholder="Valor a buscar">
-                        <button class="remove-condition" style="display: none;">
-                            <i class="fas fa-times"></i>
-                        </button>
+            <div class="benefits-container">
+                <div class="benefit-item">
+                    <div class="benefit-icon">
+                        <i class="fas fa-bolt"></i>
+                    </div>
+                    <div class="benefit-content">
+                        <h3>Ahorra tiempo</h3>
+                        <p>Configura tu base de datos en minutos y comienza a gestionar tus datos inmediatamente sin complicaciones.</p>
+                    </div>
+                </div>
+                <div class="benefit-item">
+                    <div class="benefit-icon">
+                        <i class="fas fa-user-shield"></i>
+                    </div>
+                    <div class="benefit-content">
+                        <h3>Sin conocimientos técnicos</h3>
+                        <p>No necesitas saber programar o tener experiencia en bases de datos para utilizar Datando eficientemente.</p>
+                    </div>
+                </div>
+                <div class="benefit-item">
+                    <div class="benefit-icon">
+                        <i class="fas fa-sync-alt"></i>
+                    </div>
+                    <div class="benefit-content">
+                        <h3>Siempre actualizado</h3>
+                        <p>Mantén tus datos organizados y actualizados con facilidad gracias a nuestra interfaz intuitiva.</p>
+                    </div>
+                </div>
+                <div class="benefit-item">
+                    <div class="benefit-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <div class="benefit-content">
+                        <h3>Mejora la productividad</h3>
+                        <p>Accede rápidamente a la información que necesitas y toma decisiones basadas en datos organizados.</p>
                     </div>
                 </div>
             </div>
-            
-            <div class="search-actions">
-                <div class="logical-operators">
-                    <select id="logicalOperator">
-                        <option value="and">Y (AND) - Cumplir todas las condiciones</option>
-                        <option value="or">O (OR) - Cumplir al menos una condición</option>
-                    </select>
-                    <button id="addCondition" class="add-condition-btn">
-                        <i class="fas fa-plus"></i> Agregar condición
-                    </button>
-                </div>
-                <button id="searchButton" class="search-btn">
-                    <i class="fas fa-search"></i> Buscar
-                </button>
+        </div>
+    </section>
+
+    <!-- Call to Action Section -->
+    <section id="cta" class="cta">
+        <div class="container">
+            <div class="cta-content">
+                <h2>¿Listo para organizar tus datos?</h2>
+                <p>Comienza a utilizar Datando hoy mismo y descubre lo fácil que puede ser gestionar tu información.</p>
+                <a href="administrador.html" class="btn btn-primary btn-large">
+                    <i class="fas fa-rocket"></i> Comenzar ahora - ¡Es gratis!
+                </a>
             </div>
         </div>
+    </section>
 
-            <!-- Tabla de datos -->
-            <div class="table-section">
-                <h2>Clientes Registrados</h2>
-                <div class="table-controls">
-                    <button id="toggleRowNumbers" onclick="toggleRowNumbers()">
-                        <i class="fas fa-list-ol"></i> Ocultar Numeración
-                    </button>
-                    <div class="export-dropdown">
-                        <button id="exportDropdownBtn">
-                            <i class="fas fa-file-export"></i> Exportar
-                        </button>
-                        <div id="exportDropdownContent" class="export-dropdown-content">
-                            <div class="export-option" onclick="exportToCSV()">
-                                <i class="fas fa-file-excel"></i> Excel (.xls)
-                            </div>
-                            <div class="export-option" onclick="exportToJSON()">
-                                <i class="fas fa-file-code"></i> JSON (.json)
-                            </div>
-                            <div class="export-option" onclick="exportToAccess()">
-                                <i class="fas fa-database"></i> Access (.accdb)
-                            </div>
-                            <div class="export-option" onclick="exportToSQL()">
-                                <i class="fas fa-database"></i> SQL (.sql)
-                            </div>
+    <!-- Footer -->
+        <footer class="footer">
+            <div class="container">
+                <div class="footer-content">
+                    <div class="footer-brand">
+                        <div class="footer-logo">
+                            <i class="fas fa-database"></i>
+                            <span>DB Manager</span>
+                        </div>
+                        <p>Una solución simple para gestionar tus datos sin necesidad de conocimientos técnicos.</p>
+                    </div>
+                    <div class="footer-links">
+                        <div class="footer-links-column">
+                            <h4>Navegación</h4>
+                            <ul>
+                                <li><a href="#home">Inicio</a></li>
+                                <li><a href="#what-is">¿Qué es?</a></li>
+                                <li><a href="#features">Características</a></li>
+                                <li><a href="#benefits">Beneficios</a></li>
+                            </ul>
+                        </div>
+                        <div class="footer-links-column">
+                            <h4>Recursos</h4>
+                            <ul>
+                                <li><a href="administrador.html">Administrador</a></li>
+                                <li><a href="#what-is">Tutorial</a></li>
+                                <li><a href="#benefits">Contacto</a></li>
+                            </ul>
                         </div>
                     </div>
-                    <button onclick="showImportInfo()">
-                        <i class="fas fa-file-import"></i> Importar DB
-                    </button>
-                    <input type="file" id="fileInput" accept=".json" style="display: none">                    
-                </div>                
-                <div class="table-container">
-                    <table id="clientsTable">
-                        <thead>
-                            <tr id="tableHeader"></tr>
-                        </thead>
-                        <tbody id="tableBody"></tbody>
-                    </table>
+                </div>
+                <div class="footer-bottom">
+                    <p>&copy; 2023 DB Manager. Todos los derechos reservados.</p>
+                    <div class="social-links">
+                        <a href="#"><i class="fab fa-facebook"></i></a>
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                        <a href="#"><i class="fab fa-linkedin"></i></a>
+                    </div>
                 </div>
             </div>
-        </div>
-    </div>
-    
-    <footer class="footer">
-        <div class="footer-content">
-            <p>&copy; 2024 DB Manager. Todos los derechos reservados.</p>
-            <div class="social-links">
-                <a href="#"><i class="fab fa-github"></i></a>
-                <a href="#"><i class="fab fa-linkedin"></i></a>
-                <a href="#"><i class="fab fa-twitter"></i></a>
-            </div>
-        </div>
-    </footer>
-    
+        </footer>
+
+    <!-- Scroll to Top Button -->
     <button id="scrollToTop" class="scroll-to-top">
         <i class="fas fa-arrow-up"></i>
     </button>
-    <button id="scrollToBottom" class="scroll-to-bottom">
-        <i class="fas fa-arrow-down"></i>
-    </button>
 
-    <script src="script.js"></script>
+    <script src="index_script.js"></script>
 </body>
 </html>

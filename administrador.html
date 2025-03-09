@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Administrador de Base de Datos</title>
+    <link rel="stylesheet" href="administrador.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <!-- Navbar -->
+<nav class="navbar">
+    <div class="nav-content">
+        <div class="nav-brand">
+            <i class="fas fa-database"></i>
+            <span>DB Manager</span>
+        </div>
+        <div class="nav-links">
+            <a href="index.html" class="nav-link"><i class="fas fa-home"></i> Inicio</a>
+            <a href="administrador.html" class="nav-link active"><i class="fas fa-table"></i> Administrador de Datos</a>
+            <a href="" class="nav-link"><i class="fas fa-book"></i> Tutorial</a>
+            <a href="" class="nav-link"><i class="fa-solid fa-address-card"></i> Contacto</a>
+        </div>
+        <div class="menu-toggle">
+            <i class="fas fa-bars"></i>
+        </div>
+        <div class="theme-switch">
+            <label class="switch">
+                <input type="checkbox" id="darkModeToggle">
+                <span class="slider"></span>
+            </label>
+        </div>
+    </div>
+</nav>
+    
+
+    <div class="container">
+        <header>
+            <h1>Administrador de Base de Datos</h1>
+        </header>
+        
+        <div class="database-title">
+            <input type="text" id="databaseTitle" placeholder="Nombre de tu base de datos">
+        </div>
+
+        <div class="main-content">
+            <!-- Configuración de campos -->
+            <div class="config-section">
+                <h2>Configuración de campos</h2>
+                <div class="field-creator">
+                    <input type="text" id="newFieldName" placeholder="Nombre del campo">
+                    <select id="newFieldType">
+                        <option value="text">Texto</option>
+                        <option value="number">Número</option>
+                        <option value="date">Fecha</option>
+                        <option value="image">Imagen</option>
+                        <option value="status">Estado</option>
+                    </select>
+                    <div class="required-field-toggle">
+                        <input type="checkbox" id="fieldRequired" checked>
+                        <label for="fieldRequired">Campo requerido</label>
+                    </div>
+                    <button onclick="addField()">Agregar Campo</button>
+                </div>                
+                <div id="activeFields" class="active-fields"></div>
+            </div>
+
+            <!-- Formulario de entrada -->
+            <div class="input-section">
+                <h2>Agregar Nuevo Cliente</h2>
+                <form id="clientForm"></form>
+            </div>
+
+            <!-- Búsqueda -->
+        <div class="search-section">
+            <h2>Buscar Clientes</h2>
+            <div id="searchConditions">
+                <div class="search-condition">
+                    <div class="search-controls">
+                        <select class="searchField"></select>
+                        <select class="searchOperator">
+                            <option value="contains">Contiene</option>
+                            <option value="equals">Igual a</option>
+                            <option value="notEquals">Distinto a</option>
+                            <option value="startsWith">Empieza con</option>
+                            <option value="endsWith">Termina con</option>
+                            <option value="greater">Mayor que</option>
+                            <option value="less">Menor que</option>
+                            <option value="greaterEqual">Mayor o igual que</option>
+                            <option value="lessEqual">Menor o igual que</option>
+                        </select>
+                        <input type="text" class="searchValue" placeholder="Valor a buscar">
+                        <button class="remove-condition" style="display: none;">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="search-actions">
+                <div class="logical-operators">
+                    <select id="logicalOperator">
+                        <option value="and">Y (AND) - Cumplir todas las condiciones</option>
+                        <option value="or">O (OR) - Cumplir al menos una condición</option>
+                    </select>
+                    <button id="addCondition" class="add-condition-btn">
+                        <i class="fas fa-plus"></i> Agregar condición
+                    </button>
+                </div>
+                <button id="searchButton" class="search-btn">
+                    <i class="fas fa-search"></i> Buscar
+                </button>
+            </div>
+        </div>
+
+            <!-- Tabla de datos -->
+            <div class="table-section">
+                <h2>Clientes Registrados</h2>
+                <div class="table-controls">
+                    <button id="toggleRowNumbers" onclick="toggleRowNumbers()">
+                        <i class="fas fa-list-ol"></i> Ocultar Numeración
+                    </button>
+                    <div class="export-dropdown">
+                        <button id="exportDropdownBtn">
+                            <i class="fas fa-file-export"></i> Exportar
+                        </button>
+                        <div id="exportDropdownContent" class="export-dropdown-content">
+                            <div class="export-option" onclick="exportToCSV()">
+                                <i class="fas fa-file-excel"></i> Excel (.xls)
+                            </div>
+                            <div class="export-option" onclick="exportToJSON()">
+                                <i class="fas fa-file-code"></i> JSON (.json)
+                            </div>
+                            <div class="export-option" onclick="exportToAccess()">
+                                <i class="fas fa-database"></i> Access (.accdb)
+                            </div>
+                            <div class="export-option" onclick="exportToSQL()">
+                                <i class="fas fa-database"></i> SQL (.sql)
+                            </div>
+                        </div>
+                    </div>
+                    <button onclick="showImportInfo()">
+                        <i class="fas fa-file-import"></i> Importar DB
+                    </button>
+                    <input type="file" id="fileInput" accept=".json" style="display: none">                    
+                </div>                
+                <div class="table-container">
+                    <table id="clientsTable">
+                        <thead>
+                            <tr id="tableHeader"></tr>
+                        </thead>
+                        <tbody id="tableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <footer class="footer">
+        <div class="footer-content">
+            <p>&copy; 2024 DB Manager. Todos los derechos reservados.</p>
+            <div class="social-links">
+                <a href="#"><i class="fab fa-github"></i></a>
+                <a href="#"><i class="fab fa-linkedin"></i></a>
+                <a href="#"><i class="fab fa-twitter"></i></a>
+            </div>
+        </div>
+    </footer>
+    
+    <button id="scrollToTop" class="scroll-to-top">
+        <i class="fas fa-arrow-up"></i>
+    </button>
+    <button id="scrollToBottom" class="scroll-to-bottom">
+        <i class="fas fa-arrow-down"></i>
+    </button>
+
+    <script src="administrador.js"></script>
+</body>
+</html>
